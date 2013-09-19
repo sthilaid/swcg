@@ -96,7 +96,9 @@ func CreateDB() []Card {
 				Trait(Trait_Location)},
 			Health: 0,
 			Quote: "",
-			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 1, CardSetNumber: 6}},
+			ObjectiveSets: []ObjectiveSet{
+				ObjectiveSet{SetId: 1, CardSetNumber: 6},
+				ObjectiveSet{SetId: 2, CardSetNumber: 5}},
 			Set: CardSet_Core,
 			Number: 31},
 
