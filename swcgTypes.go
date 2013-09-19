@@ -4,18 +4,21 @@ package swcg
 // Synergy Types --------------------------------------------------------------
 
 type BaseSynergy struct {
-	IsPositiveEffect bool // if negative, is a synergy against the opponent's card
+	IsPositiveEff bool // if negative, is a synergy against the opponent's card
+}
+func (s BaseSynergy) IsPositiveEffect() bool {
+	return s.IsPositiveEff
 }
 
 type CardTypeSynergy struct {
 	BaseSynergy
-	Type CardTypeInterface
+	Type CardType
 }
 func TypeSynergy(t CardType, isPositive bool) *CardTypeSynergy {
-	return &CardTypeSynergy{BaseSynergy: BaseSynergy{isPositive}, Type: Type(t)}
+	return &CardTypeSynergy{BaseSynergy: BaseSynergy{isPositive}, Type: t}
 }
 func (syn *CardTypeSynergy) IsSynergizingWith(card *Card) bool {
-	return syn.Type.GetType() == card.Type.GetType()
+	return syn.Type == card.Type.GetType()
 }
 
 type CardTraitSynergy struct {
@@ -40,9 +43,80 @@ func PlayAreaSynergy() *PlayAreaSynergyType { return &PlayAreaSynergyType{} }
 func (syn *PlayAreaSynergyType) IsSynergizingWith(*Card) bool {
 	return false
 }
+func (syn *PlayAreaSynergyType) IsPositiveEffect() bool {
+	return true
+}
+
+type InvertedSynergyType struct {
+	synergy SynergyInterface
+}
+func InvertSynergy(s SynergyInterface) *InvertedSynergyType {
+	return &InvertedSynergyType{synergy: s}
+}
+func (syn *InvertedSynergyType) IsSynergizingWith(c *Card) bool {
+	return !syn.synergy.IsSynergizingWith(c)
+}
+func (syn *InvertedSynergyType) IsPositiveEffect() bool {
+	return syn.synergy.IsPositiveEffect()
+}
+
+type AccumulationSynergyType struct {
+	synergies SynergyList
+}
+func AccumulateSynergies(ss SynergyList) *AccumulationSynergyType {
+	return &AccumulationSynergyType{synergies: ss}
+}
+func (syn *AccumulationSynergyType) IsSynergizingWith(c *Card) bool {
+	for _, s := range syn.synergies {
+		if !s.IsSynergizingWith(c) {
+			return false
+		}
+	}
+	return true
+}
+func (syn *AccumulationSynergyType) IsPositiveEffect() bool {
+	var isPositive bool
+	for i, s := range syn.synergies {
+		if i == 0 {
+			isPositive = s.IsPositiveEffect()
+		} else if isPositive != s.IsPositiveEffect() {
+			panic("found inconsistent positive effect declaration in accumulation synergy...")
+		}
+	}
+	return isPositive
+}
+
+type OptionalSynergyType struct {
+	synergies SynergyList
+}
+func SynergyOptions(ss SynergyList) *OptionalSynergyType {
+	return &OptionalSynergyType{synergies: ss}
+}
+func (syn *OptionalSynergyType) IsSynergizingWith(c *Card) bool {
+	for _, s := range syn.synergies {
+		if s.IsSynergizingWith(c) {
+			return true
+		}
+	}
+	return false
+}
+func (syn *OptionalSynergyType) IsPositiveEffect() bool {
+	var isPositive bool
+	for i, s := range syn.synergies {
+		if i == 0 {
+			isPositive = s.IsPositiveEffect()
+		} else if isPositive != s.IsPositiveEffect() {
+			panic("found inconsistent positive effect declaration in optinal synergy...")
+		}
+	}
+	return isPositive
+}
+
+
 
 type SynergyInterface interface {
 	IsSynergizingWith(card *Card) bool
+	IsPositiveEffect() bool
 }
 type SynergyList []SynergyInterface
 
@@ -62,7 +136,12 @@ const (
 type SimpleCardType struct {
 	Type CardType
 }
-func Type(t CardType) *SimpleCardType { return &SimpleCardType{Type: t} }
+func Type(t CardType) *SimpleCardType {
+	if t == CardType_Enhancement || t == CardType_Fate || t == CardType_Objective {
+		panic("Enhancement, Fate and Objective card types shouldn't be constructed with the Type function...")
+	}
+	return &SimpleCardType{Type: t}
+}
 func (t *SimpleCardType) GetType() CardType {
 	return t.Type
 }
@@ -82,6 +161,14 @@ type FateCardType struct {
 }
 func Fate(priority int) *FateCardType {
 	return &FateCardType{SimpleCardType: SimpleCardType{Type: CardType_Fate}, EdgeBattlePriority: priority}
+}
+
+type ObjectiveCardType struct {
+	SimpleCardType
+	OnlyAvailableToFaction bool
+}
+func Objective(OnlyAvailableToFaction bool) *ObjectiveCardType {
+	return &ObjectiveCardType{SimpleCardType: SimpleCardType{Type: CardType_Objective}, OnlyAvailableToFaction: OnlyAvailableToFaction}
 }
 
 type CardTypeInterface interface {
@@ -191,6 +278,14 @@ type ComplexKeyword struct {
 }
 func KeyEdge(n int) *ComplexKeyword { return &ComplexKeyword{SimpleKeyword: *Key(K_Edge), V: n} }
 
+type ProtectKeywordType struct {
+	SimpleKeyword
+	ProtectedTrait CardTraitType  // !TODO! count in synergy value
+}
+func KeyProtect(protectedTrait CardTraitType) *ProtectKeywordType {
+	return &ProtectKeywordType{SimpleKeyword: *Key(K_Protect), ProtectedTrait: protectedTrait}
+}
+
 type KeywordInterface interface {
 	GetKeyword() CardKeywordType
 }
@@ -213,6 +308,9 @@ const (
 	Trait_Sense           CardTraitType = iota
 	Trait_Alter           CardTraitType = iota
 	Trait_Creature        CardTraitType = iota
+	Trait_Fighter         CardTraitType = iota
+	Trait_Droid           CardTraitType = iota
+	Trait_Yavin4          CardTraitType = iota
 	//...
 	Trait_MAX             CardTraitType = iota
 )
