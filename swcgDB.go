@@ -1,5 +1,37 @@
 package swcg
 
+import "strconv"
+
+type ObjectiveSetDB [6]*Card
+
+func AnalyzeDB(db []Card) []Card{
+	cardMap := make(map[int]*Card)
+	setMap  := make(map[int]*ObjectiveSetDB)
+	
+	for _, c := range db {
+		if cardMap[c.Number] != nil {
+			panic("Card id "+strconv.Itoa(c.Number)+" is already present in DB, please merge them...")
+			
+		}
+		cardMap[c.Number] = &c
+
+		for _, objSet := range c.ObjectiveSets {
+			realIndex := objSet.CardSetNumber - 1
+			if realIndex < 0 || realIndex > 5 {
+				panic("Card "+strconv.Itoa(c.Number)+" has an invalid objective set card number: "+strconv.Itoa(objSet.CardSetNumber))
+			}
+			
+			if setMap[objSet.SetId] == nil {
+				setMap[objSet.SetId] = new(ObjectiveSetDB)
+			} else if setMap[objSet.SetId][realIndex] != nil {
+				panic("Cannot add card "+strconv.Itoa(c.Number)+" to set #"+strconv.Itoa(objSet.SetId)+" as card "+strconv.Itoa(objSet.CardSetNumber)+" / 6")
+			} 
+			setMap[objSet.SetId][realIndex] = &c
+		}
+	}
+	return db
+}
+
 func CreateDB() []Card {
 	return []Card{
 
@@ -137,7 +169,7 @@ func CreateDB() []Card {
 			Quote: "",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 2, CardSetNumber: 2}},
 			Set: CardSet_Core,
-			Number: 92},
+			Number: 166},
 
 		Card{ Name: "Believer in the Old Ways",
 			Faction: Faction_Jedi,

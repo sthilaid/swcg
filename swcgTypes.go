@@ -230,10 +230,10 @@ type ObjectiveSet struct {
 	CardSetNumber int // from 1 to 6, 1 is always the objective card
 }
 
-type CardSet int
+type CardSetType int
 const (
-	CardSet_Core CardSet = iota
-	CardSet_MAX  CardSet = iota
+	CardSet_Core CardSetType = iota
+	CardSet_MAX  CardSetType = iota
 )
 
 // Cards   --------------------------------------------------------------------
@@ -250,6 +250,6 @@ type Card struct {
 	Health          int
 	Quote           string
 	ObjectiveSets   []ObjectiveSet
-	Set             CardSet
+	Set             CardSetType
 	Number          int
 }
