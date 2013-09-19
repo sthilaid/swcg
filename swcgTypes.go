@@ -211,6 +211,8 @@ const (
 	Trait_LightSaberForm  CardTraitType = iota
 	Trait_Control         CardTraitType = iota
 	Trait_Sense           CardTraitType = iota
+	Trait_Alter           CardTraitType = iota
+	Trait_Creature        CardTraitType = iota
 	//...
 	Trait_MAX             CardTraitType = iota
 )
