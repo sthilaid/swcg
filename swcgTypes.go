@@ -3,25 +3,32 @@ package swcg
 
 // Synergy Types --------------------------------------------------------------
 
+type BaseSynergy struct {
+	IsPositiveEffect bool // if negative, is a synergy against the opponent's card
+}
+
 type CardTypeSynergy struct {
+	BaseSynergy
 	Type CardTypeInterface
 }
-func TypeSynergy(t CardTypeInterface) *CardTypeSynergy {
-	return &CardTypeSynergy{Type: t}
+func TypeSynergy(t CardType, isPositive bool) *CardTypeSynergy {
+	return &CardTypeSynergy{BaseSynergy: BaseSynergy{isPositive}, Type: Type(t)}
 }
 func (syn *CardTypeSynergy) IsSynergizingWith(card *Card) bool {
 	return syn.Type.GetType() == card.Type.GetType()
 }
 
 type CardTraitSynergy struct {
-	Trait CardTrait
+	BaseSynergy
+	Trait CardTraitType
 }
-func TraitSynergy(trait CardTrait) *CardTraitSynergy {
-	return &CardTraitSynergy{Trait: trait}
+func TraitSynergy(trait CardTraitType, isPositive bool) *CardTraitSynergy {
+	return &CardTraitSynergy{BaseSynergy: BaseSynergy{isPositive}, Trait: trait}
 }
 func (syn *CardTraitSynergy) IsSynergizingWith(card *Card) bool {
-	for _, cardTrait := range card.Traits {
-		if syn.Trait == cardTrait {
+	for _, ability := range card.Abilities {
+		cardTrait, ok := ability.(*CardTrait)
+		if ok && syn.Trait == cardTrait.Trait {
 			return true
 		}
 	}
@@ -81,51 +88,6 @@ type CardTypeInterface interface {
 	GetType() CardType
 }
 
-// Keywords  ------------------------------------------------------------------
-
-type CardKeywordType int
-const (
-	K_Edge    	   CardKeywordType = iota
-	K_Elte    	   CardKeywordType = iota
-	K_Limited 	   CardKeywordType = iota
-	K_NoEnhancement    CardKeywordType = iota
-	K_Protect   	   CardKeywordType = iota
-	K_Shielding 	   CardKeywordType = iota
-	K_TargetedStrike   CardKeywordType = iota
-	K_MAX              CardKeywordType = iota
-)
-type SimpleKeyword struct {
-	K CardKeywordType
-}
-func Key(K CardKeywordType) *SimpleKeyword { return &SimpleKeyword{K: K} }
-func (k *SimpleKeyword) GetKeyword() CardKeywordType { return k.K }
-
-type ComplexKeyword struct {
-	SimpleKeyword
-	V int
-}
-func KeyEdge(n int) *ComplexKeyword { return &ComplexKeyword{SimpleKeyword: SimpleKeyword{K: K_Edge}, V: n} }
-
-type KeywordInterface interface {
-	GetKeyword() CardKeywordType
-}
-
-// Traits  --------------------------------------------------------------------
-
-type CardTrait int
-const (
-	Trait_Character       CardTrait = iota
-	Trait_Vehicule        CardTrait = iota
-	Trait_ForceUser       CardTrait = iota
-	Trait_ForceSensitive  CardTrait = iota
-	Trait_Weapon          CardTrait = iota
-	Trait_Skill           CardTrait = iota
-	Trait_Dagobah         CardTrait = iota
-	Trait_Location        CardTrait = iota
-	//...
-	Trait_MAX             CardTrait = iota
-)
-
 // Factions  ------------------------------------------------------------------
 
 type CardFaction int
@@ -143,26 +105,122 @@ const (
 // Combat Icons  --------------------------------------------------------------
 
 type CombatIcon [2]int
-type CombatIcons struct {
+type CardCombatIcons struct {
 	CombatDamage CombatIcon
 	Tactics      CombatIcon
 	BlastDamage  CombatIcon
 }
+func CombatIcons(combat CombatIcon, tactics CombatIcon, blast CombatIcon) *CardCombatIcons {
+	return &CardCombatIcons{CombatDamage: combat, Tactics: tactics, BlastDamage: blast}
+}
 
-// Actions   --------------------------------------------------------------
+// Abilities   ----------------------------------------------------------------
 
-type ActionType int
+type AbilityType int
 const (
-	ActionType_Action      ActionType = iota
-	ActionType_Reaction    ActionType = iota
-	ActionType_Enhancement ActionType = iota
-	//...
-	ActionType_MAX         ActionType = iota
+	AbilityType_Action          AbilityType = iota
+	AbilityType_Reaction        AbilityType = iota
+	AbilityType_Interrupt       AbilityType = iota
+	AbilityType_ConstantEffect  AbilityType = iota
+	AbilityType_Keyword         AbilityType = iota
+	AbilityType_Trait           AbilityType = iota
+	AbilityType_MAX             AbilityType = iota
 )
-type CardAction struct {
-	Type           ActionType
-	Description    string
-	Synergies      SynergyList
+
+type BaseAbility struct {
+	Type           AbilityType
+}
+func (a *BaseAbility) GetType() AbilityType {
+	return a.Type
+}
+
+type CardAbility struct {
+	BaseAbility
+	Description string
+	Synergies   SynergyList
+}
+func Ability(t AbilityType, desc string, syn SynergyList) *CardAbility {
+	if t == AbilityType_Keyword || t == AbilityType_Trait {
+		panic("Keywords and Traits are not basic abilities...")
+	}
+	return &CardAbility{BaseAbility: BaseAbility{Type: t}, Description: desc, Synergies: syn}
+}
+func Action(desc string, syn SynergyList) *CardAbility {
+	return Ability(AbilityType_Action, desc, syn)
+}
+func Reaction(desc string, syn SynergyList) *CardAbility {
+	return Ability(AbilityType_Reaction, desc, syn)
+}
+func Interrupt(desc string, syn SynergyList) *CardAbility {
+	return Ability(AbilityType_Interrupt, desc, syn)
+}
+func ConstantEffect(desc string, syn SynergyList) *CardAbility {
+	return Ability(AbilityType_ConstantEffect, desc, syn)
+}
+
+type AbilityInterface interface {
+	GetType() AbilityType
+}
+
+
+// Keywords  ------------------------------------------------------------------
+
+type CardKeywordType int
+const (
+	K_Edge    	   CardKeywordType = iota
+	K_Elite    	   CardKeywordType = iota
+	K_Limited 	   CardKeywordType = iota
+	K_NoEnhancement    CardKeywordType = iota
+	K_Protect   	   CardKeywordType = iota
+	K_Shielding 	   CardKeywordType = iota
+	K_TargetedStrike   CardKeywordType = iota
+	K_MAX              CardKeywordType = iota
+)
+type SimpleKeyword struct {
+	BaseAbility
+	K CardKeywordType
+}
+func Key(K CardKeywordType) *SimpleKeyword {
+	return &SimpleKeyword{BaseAbility: BaseAbility{AbilityType_Keyword}, K: K}
+}
+func (k *SimpleKeyword) GetKeyword() CardKeywordType { return k.K }
+
+type ComplexKeyword struct {
+	SimpleKeyword
+	V int
+}
+func KeyEdge(n int) *ComplexKeyword { return &ComplexKeyword{SimpleKeyword: *Key(K_Edge), V: n} }
+
+type KeywordInterface interface {
+	GetKeyword() CardKeywordType
+}
+
+// Traits  --------------------------------------------------------------------
+
+type CardTraitType int
+const (
+	Trait_Character       CardTraitType = iota
+	Trait_Vehicule        CardTraitType = iota
+	Trait_Force           CardTraitType = iota
+	Trait_ForceUser       CardTraitType = iota
+	Trait_ForceSensitive  CardTraitType = iota
+	Trait_Weapon          CardTraitType = iota
+	Trait_Skill           CardTraitType = iota
+	Trait_Dagobah         CardTraitType = iota
+	Trait_Location        CardTraitType = iota
+	Trait_LightSaberForm  CardTraitType = iota
+	Trait_Control         CardTraitType = iota
+	Trait_Sense           CardTraitType = iota
+	//...
+	Trait_MAX             CardTraitType = iota
+)
+
+type CardTrait struct {
+	BaseAbility
+	Trait CardTraitType
+}
+func Trait(t CardTraitType) *CardTrait {
+	return &CardTrait{BaseAbility: BaseAbility{Type: AbilityType_Trait}, Trait: t}
 }
 
 // Sets   ---------------------------------------------------------------------
@@ -182,10 +240,8 @@ type Card struct {
 	Cost            int
 	Ressources      int
 	ForceIcons      int
-	CardCombatIcons *CombatIcons
-	Keywords        []KeywordInterface
-	Traits          []CardTrait
-	Actions         []CardAction
+	CardCombatIcons *CardCombatIcons
+	Abilities       []AbilityInterface
 	Health          int
 	Quote           string
 	Block           int
