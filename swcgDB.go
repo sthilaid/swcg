@@ -15,8 +15,7 @@ func CreateDB() []Card {
 			Abilities: nil,
 			Health: 0,
 			Quote: "\"You must learn the ways of the Force, if you are to come with me to Alderaan.\"\n-Obi-Wan Kenobi, A New Hope",
-			Block: 1,
-			BlockId: 1,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 1,CardSetNumber: 1}},
 			Set: CardSet_Core,
 			Number: 2},
 
@@ -34,8 +33,7 @@ func CreateDB() []Card {
 				Reaction("After your opponent's turn begins, remove 1 focus token from this unit.", nil)},
 			Health: 3,
 			Quote: "",
-			Block: 1,
-			BlockId: 2,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 1,CardSetNumber: 2}},
 			Set: CardSet_Core,
 			Number: 92},
 
@@ -49,8 +47,7 @@ func CreateDB() []Card {
 			Abilities: []AbilityInterface{Trait(Trait_Character)},
 			Health: 1,
 			Quote: "The Jedi once recruited from nearly every sentient species in the galaxy.",
-			Block: 1,
-			BlockId: 3,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 1, CardSetNumber: 3}},
 			Set: CardSet_Core,
 			Number: 15},
 		
@@ -66,8 +63,7 @@ func CreateDB() []Card {
 				ConstantEffect("Enhanced Unit gains 1 Combat Damage and 1 Blast Damage.", nil)},
 			Health: 0,
 			Quote: "An elegant weapon for a more civilized age.",
-			Block: 1,
-			BlockId: 4,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 1, CardSetNumber: 4}},
 			Set: CardSet_Core,
 			Number: 102},
 
@@ -83,8 +79,7 @@ func CreateDB() []Card {
 				Action("Focus this enhancement to remove 1 focus token from enhanced unit.", nil)},
 			Health: 0,
 			Quote: "",
-			Block: 1,
-			BlockId: 5,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 1, CardSetNumber: 5}},
 			Set: CardSet_Core,
 			Number: 153},
 
@@ -101,8 +96,7 @@ func CreateDB() []Card {
 				Trait(Trait_Location)},
 			Health: 0,
 			Quote: "",
-			Block: 1,
-			BlockId: 6,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 1, CardSetNumber: 6}},
 			Set: CardSet_Core,
 			Number: 31},
 
@@ -121,8 +115,7 @@ func CreateDB() []Card {
 					SynergyList{TypeSynergy(CardType_Enhancement, true)})},
 			Health: 0,
 			Quote: "\"What's in there?\"\n\"Only what you take with you.\"\n- The Empire Strikes Back",
-			Block: 2,
-			BlockId: 1,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 2, CardSetNumber: 1}},
 			Set: CardSet_Core,
 			Number: 76},
 
@@ -140,8 +133,7 @@ func CreateDB() []Card {
 				Reaction("After your opponent's turn begins, remove 1 focus token from this unit.", nil)},
 			Health: 3,
 			Quote: "",
-			Block: 1,
-			BlockId: 2,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 2, CardSetNumber: 2}},
 			Set: CardSet_Core,
 			Number: 92},
 
@@ -157,8 +149,7 @@ func CreateDB() []Card {
 				Trait(Trait_ForceSensitive)},
 			Health: 2,
 			Quote: "\"The Jedi are extinct, their fire has gone out of the universe.\"\n-Grand Moff Wilhuff Tarkin, A New Hope",
-			Block: 2,
-			BlockId: 3,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 2, CardSetNumber: 3}},
 			Set: CardSet_Core,
 			Number: 154},
 	
@@ -175,8 +166,7 @@ func CreateDB() []Card {
 				ConstantEffect("Damage from enhanced unit's CombatDamage icon type may be divided among any number of participating enemy units.", nil)},
 			Health: 0,
 			Quote: "\"...let go your conscious self and act on instinct.\"\n-Obi-Wan Kenobi, A New Hope",
-			Block: 2,
-			BlockId: 4,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 2, CardSetNumber: 4}},
 			Set: CardSet_Core,
 			Number: 122},
 
@@ -196,8 +186,7 @@ func CreateDB() []Card {
 				Interrupt("When an event card is played, cancel its effect.", SynergyList{TypeSynergy(CardType_Event, false)})},
 			Health: 0,
 			Quote: "For those strong in the force, action and reaction are the same.",
-			Block: 2,
-			BlockId: 6,
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 2, CardSetNumber: 6}},
 			Set: CardSet_Core,
 		Number: 28}}
 }

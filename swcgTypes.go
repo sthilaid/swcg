@@ -225,6 +225,11 @@ func Trait(t CardTraitType) *CardTrait {
 
 // Sets   ---------------------------------------------------------------------
 
+type ObjectiveSet struct {
+	SetId int
+	CardSetNumber int // from 1 to 6, 1 is always the objective card
+}
+
 type CardSet int
 const (
 	CardSet_Core CardSet = iota
@@ -244,8 +249,7 @@ type Card struct {
 	Abilities       []AbilityInterface
 	Health          int
 	Quote           string
-	Block           int
-	BlockId         int
+	ObjectiveSets   []ObjectiveSet
 	Set             CardSet
 	Number          int
 }
