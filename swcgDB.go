@@ -1,34 +1,86 @@
 package swcg
 
+import "fmt"
 import "strconv"
 
+type CardMap        map[int]*Card
 type ObjectiveSetDB [6]*Card
+type SetMap         map[int]*ObjectiveSetDB
+type TypeMap        map[CardType][]*Card
+type KeywordMap     map[CardKeywordType][]*Card
+type TraitMap       map[CardTraitType][]*Card
 
-func AnalyzeDB(db []Card) []Card{
-	cardMap := make(map[int]*Card)
-	setMap  := make(map[int]*ObjectiveSetDB)
-	
-	for _, c := range db {
+type DataCache struct {
+	cardMap    *CardMap
+	setMap     *SetMap
+	typeMap    *TypeMap
+	keywordMap *KeywordMap
+	traitMap   *TraitMap
+}
+
+func (cache *DataCache) DumpStats() {
+	for i, set := range *cache.setMap {
+		fmt.Println("Set #"+strconv.Itoa(i)+": "+set[0].Name)
+		// for _, c := range set {
+		// 	fmt.Println("    "+c.Name)
+		// }
+	}
+
+	for i, cards := range *cache.traitMap {
+		fmt.Println("Trait: "+TraitNames[i]+":"+strconv.Itoa(len(cards)))
+		// for _, c := range cards {
+		// 	fmt.Println("    "+c.Name)
+		// }
+	}
+}
+
+func AnalyzeDB(db []Card) []Card {
+	cardMap    := make(CardMap)
+	setMap     := make(SetMap)
+	typeMap    := make(TypeMap)
+	keywordMap := make(KeywordMap)
+	traitMap   := make(TraitMap)
+
+	for i, c := range db {
+		// card definition uniqueness validation
 		if cardMap[c.Number] != nil {
 			panic("Card id "+strconv.Itoa(c.Number)+" is already present in DB, please merge them...")
 			
 		}
-		cardMap[c.Number] = &c
+		cardMap[c.Number] = &db[i]
 
+		// set sanity validation
 		for _, objSet := range c.ObjectiveSets {
 			realIndex := objSet.CardSetNumber - 1
 			if realIndex < 0 || realIndex > 5 {
 				panic("Card "+strconv.Itoa(c.Number)+" has an invalid objective set card number: "+strconv.Itoa(objSet.CardSetNumber))
+			} else if realIndex == 0 && c.Type.GetType() != CardType_Objective {
+				panic("Trying to assing a non objective card as 1/6 for set #"+strconv.Itoa(objSet.SetId))
 			}
 			
 			if setMap[objSet.SetId] == nil {
 				setMap[objSet.SetId] = new(ObjectiveSetDB)
 			} else if setMap[objSet.SetId][realIndex] != nil {
 				panic("Cannot add card "+strconv.Itoa(c.Number)+" to set #"+strconv.Itoa(objSet.SetId)+" as card "+strconv.Itoa(objSet.CardSetNumber)+" / 6")
-			} 
-			setMap[objSet.SetId][realIndex] = &c
+			}
+			//fmt.Println("Adding "+c.Name+"in set "+strconv.Itoa(objSet.SetId))
+			setMap[objSet.SetId][realIndex] = &db[i]
+		}
+
+		typeMap[c.Type.GetType()] = append(typeMap[c.Type.GetType()], &c)
+
+		for _, ability := range c.Abilities {
+			switch a := ability.(type) {
+			case KeywordInterface: keywordMap[a.GetKeyword()] = append(keywordMap[a.GetKeyword()], &db[i])
+			case *CardTrait:       traitMap[a.Trait]          = append(traitMap[a.Trait], &db[i])
+			//case CardAbility: // todo map synergies
+			}
 		}
 	}
+
+	cache := &DataCache{&cardMap, &setMap, &typeMap, &keywordMap, &traitMap}
+	cache.DumpStats()
+	
 	return db
 }
 

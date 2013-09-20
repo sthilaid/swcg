@@ -132,6 +132,13 @@ const (
 	CardType_Enhancement CardType = iota
 	CardType_MAX         CardType = iota
 )
+var CardTypeNames [CardType_MAX]string = [CardType_MAX]string {
+	"CardType_Unit",
+	"CardType_Event",
+	"CardType_Objective",
+	"CardType_Fate",
+	"CardType_Enhancement",
+}
 
 type SimpleCardType struct {
 	Type CardType
@@ -189,6 +196,16 @@ const (
 	Faction_DarkNeutral    CardFaction = iota
 	Faction_MAX            CardFaction = iota
 )
+var FactionNames [Faction_MAX]string = [Faction_MAX]string {
+	"Faction_Jedi",
+	"Faction_RebelAliance",
+	"Faction_Smugglers",
+	"Faction_LightNeutral",
+	"Faction_Sith",
+	"Faction_ImperialNavy",
+	"Faction_ScumAndVillany",
+	"Faction_DarkNeutral",
+}
 
 // Combat Icons  --------------------------------------------------------------
 
@@ -265,6 +282,16 @@ const (
 	K_TargetedStrike   CardKeywordType = iota
 	K_MAX              CardKeywordType = iota
 )
+var KeywordNames [K_MAX]string = [K_MAX]string {
+	"K_Edge",
+	"K_Elite",
+	"K_Limited",
+	"K_NoEnhancement",
+	"K_Protect",
+	"K_Shielding",
+	"K_TargetedStrike",
+}
+
 type SimpleKeyword struct {
 	BaseAbility
 	K CardKeywordType
@@ -320,6 +347,29 @@ const (
 	Trait_MAX             CardTraitType = iota
 )
 
+var TraitNames [Trait_MAX]string = [Trait_MAX]string {
+	"Trait_Character",
+	"Trait_Vehicule",
+	"Trait_Force",
+	"Trait_ForceUser",
+	"Trait_ForceSensitive",
+	"Trait_Weapon",
+	"Trait_Skill",
+	"Trait_Dagobah",
+	"Trait_Location",
+	"Trait_LightSaberForm",
+	"Trait_Control",
+	"Trait_Sense",
+	"Trait_Alter",
+	"Trait_Creature",
+	"Trait_Fighter",
+	"Trait_Droid",
+	"Trait_Yavin4",
+	"Trait_CloudCity",
+	"Trait_CapitalShip",
+	"Trait_Engineer",
+}
+	
 type CardTrait struct {
 	BaseAbility
 	Trait CardTraitType
