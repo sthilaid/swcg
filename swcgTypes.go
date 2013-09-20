@@ -248,6 +248,7 @@ func ConstantEffect(desc string, syn SynergyList) *CardAbility {
 type AbilityInterface interface {
 	GetType() AbilityType
 }
+type AbilityList []AbilityInterface
 
 
 // Keywords  ------------------------------------------------------------------
@@ -311,6 +312,9 @@ const (
 	Trait_Fighter         CardTraitType = iota
 	Trait_Droid           CardTraitType = iota
 	Trait_Yavin4          CardTraitType = iota
+	Trait_CloudCity       CardTraitType = iota
+	Trait_CapitalShip     CardTraitType = iota
+	Trait_Engineer        CardTraitType = iota
 	//...
 	Trait_MAX             CardTraitType = iota
 )

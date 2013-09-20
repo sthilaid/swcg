@@ -45,7 +45,7 @@ func CreateDB() []Card {
 			ForceIcons: 0,
 			CardCombatIcons: nil,
 			Abilities: nil,
-			Health: 0,
+			Health: 4,
 			Quote: "\"You must learn the ways of the Force, if you are to come with me to Alderaan.\"\n-Obi-Wan Kenobi, A New Hope",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 1,CardSetNumber: 1}},
 			Set: CardSet_Core,
@@ -58,7 +58,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 3,
 			CardCombatIcons: CombatIcons(CombatIcon{2,0}, CombatIcon{0,0}, CombatIcon{1,1}),
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Key(K_TargetedStrike),
 				Trait(Trait_Character),
 				Trait(Trait_ForceUser),
@@ -76,7 +76,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: CombatIcons(CombatIcon{0,1}, CombatIcon{0,1}, CombatIcon{0,0}),
-			Abilities: []AbilityInterface{Trait(Trait_Character)},
+			Abilities: AbilityList{Trait(Trait_Character)},
 			Health: 1,
 			Quote: "The Jedi once recruited from nearly every sentient species in the galaxy.",
 			ObjectiveSets: []ObjectiveSet{
@@ -93,7 +93,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 2,
 			CardCombatIcons: nil,
-		        Abilities: []AbilityInterface{
+		        Abilities: AbilityList{
 				Trait(Trait_Weapon),
 				ConstantEffect("Enhanced Unit gains 1 Combat Damage and 1 Blast Damage.", nil)},
 			Health: 0,
@@ -109,7 +109,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: nil,
-		        Abilities: []AbilityInterface{
+		        Abilities: AbilityList{
 				Trait(Trait_Skill),
 				Action("Focus this enhancement to remove 1 focus token from enhanced unit.", nil)},
 			Health: 0,
@@ -125,7 +125,7 @@ func CreateDB() []Card {
 			Ressources: 1,
 			ForceIcons: 0,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Key(K_Limited),
 				Trait(Trait_Dagobah),
 				Trait(Trait_Location)},
@@ -146,11 +146,11 @@ func CreateDB() []Card {
 			Ressources: 1,
 			ForceIcons: 0,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Dagobah),
 				ConstantEffect("Reduce the cost of the first enhancement you play each turn by 1.",
 					SynergyList{TypeSynergy(CardType_Enhancement, true)})},
-			Health: 0,
+			Health: 5,
 			Quote: "\"What's in there?\"\n\"Only what you take with you.\"\n- The Empire Strikes Back",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 2, CardSetNumber: 1}},
 			Set: CardSet_Core,
@@ -163,7 +163,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 5,
 			CardCombatIcons: CombatIcons(CombatIcon{0,1}, CombatIcon{1,0}, CombatIcon{0,1}),
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Key(K_Elite),
 				Trait(Trait_Character),
 				Trait(Trait_ForceUser),
@@ -181,12 +181,14 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: CombatIcons(CombatIcon{1,0}, CombatIcon{0,0}, CombatIcon{0,1}),
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Character),
 				Trait(Trait_ForceSensitive)},
 			Health: 2,
 			Quote: "\"The Jedi are extinct, their fire has gone out of the universe.\"\n-Grand Moff Wilhuff Tarkin, A New Hope",
-			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 2, CardSetNumber: 3}},
+			ObjectiveSets: []ObjectiveSet{
+				ObjectiveSet{SetId: 2, CardSetNumber: 3},
+				ObjectiveSet{SetId: 7, CardSetNumber: 3}},
 			Set: CardSet_Core,
 			Number: 154},
 	
@@ -197,7 +199,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 2,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Skill),
 				Trait(Trait_LightSaberForm),
 				ConstantEffect("Damage from enhanced unit's CombatDamage icon type may be divided among any number of participating enemy units.", nil)},
@@ -216,7 +218,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 2,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Force),
 				Trait(Trait_Control),
 				Trait(Trait_Sense),
@@ -236,10 +238,10 @@ func CreateDB() []Card {
 			Ressources: 1,
 			ForceIcons: 0,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Reaction("After you play a Force User unit, draw 1 card.",
 					SynergyList{TraitSynergy(Trait_ForceUser, true)})},
-			Health: 0,
+			Health: 5,
 			Quote: "\"The Force will be with you, always.\"\n-Obi-Wan Kenobi, A New Hope",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 3, CardSetNumber: 1}},
 			Set: CardSet_Core,
@@ -252,7 +254,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 4,
 			CardCombatIcons: CombatIcons(CombatIcon{1,0}, CombatIcon{1,1}, CombatIcon{0,1}),
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Key(K_Elite),
 				Trait(Trait_Character),
 				Trait(Trait_ForceUser),
@@ -270,12 +272,14 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: CombatIcons(CombatIcon{2,0}, CombatIcon{0,0}, CombatIcon{0,1}),
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Character),
 				Trait(Trait_ForceUser)},
 			Health: 1,
 			Quote: "\"For over a thousand generations the Jedi Knights were the guardians of peace and justice in the Old Republic. Before the dark times, before the Empire.\"\n-Obi-Wan Kenobi, A New Hope",
-			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 3, CardSetNumber: 3}},
+			ObjectiveSets: []ObjectiveSet{
+				ObjectiveSet{SetId: 3, CardSetNumber: 3},
+			ObjectiveSet{SetId: 7, CardSetNumber: 2}},
 			Set: CardSet_Core,
 			Number: 84},
 	
@@ -286,7 +290,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Force),
 				Trait(Trait_Control),
 				Trait(Trait_Sense),
@@ -295,7 +299,9 @@ func CreateDB() []Card {
 					SynergyList{TraitSynergy(Trait_Character, false), TraitSynergy(Trait_Creature, false)})},
 			Health: 0,
 			Quote: "\"The Force can have a strong influence on the weak-minded.\"\n-Obi-Wan Kenobi, A New Hope",
-			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 3, CardSetNumber: 4}},
+			ObjectiveSets: []ObjectiveSet{
+				ObjectiveSet{SetId: 3, CardSetNumber: 4},
+				ObjectiveSet{SetId: 7, CardSetNumber: 5}},
 			Set: CardSet_Core,
 			Number: 85},
 
@@ -306,7 +312,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Action("Place 1 shield on a taret Character unit, even if that unit is already shielded.",
 					SynergyList{TraitSynergy(Trait_Character, true)})},
 			Health: 0,
@@ -322,7 +328,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 2,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Action("Deal 1 damage to a target participating enemy unit.", SynergyList{TypeSynergy(CardType_Unit, false)})},
 			Health: 0,
 			Quote: "",
@@ -339,10 +345,10 @@ func CreateDB() []Card {
 			Ressources: 2,
 			ForceIcons: 0,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Dagobah),
 				Interrupt("When this objective is destroyed, search your objective deck to choose your next objective and put it into play immediately. Shuffle your objective deck.", nil)},
-			Health: 0,
+			Health: 4,
 			Quote: "",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 4, CardSetNumber: 1}},
 			Set: CardSet_Core,
@@ -355,7 +361,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 2,
 			CardCombatIcons: CombatIcons(CombatIcon{0,0}, CombatIcon{0,0}, CombatIcon{3,0}),
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Key(K_Elite),
 				Trait(Trait_Vehicule),
 				Trait(Trait_Fighter)},
@@ -372,7 +378,7 @@ func CreateDB() []Card {
 			Ressources: 1,
 			ForceIcons: 0,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{Trait(Trait_Droid)},
+			Abilities: AbilityList{Trait(Trait_Droid)},
 			Health: 1,
 				Quote: "Possessing a surprising amount of ingenuity for a droid, R2-D2 has rescued his friends from many tight situations.",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 4, CardSetNumber: 3}},
@@ -388,7 +394,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 					Reaction("After a Character unit is focused to strike, remove 1 focus token from that unit.",
 						SynergyList{TraitSynergy(Trait_Character, true)})},
 			Health: 0,
@@ -404,7 +410,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 2,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 					Action("If you are the attacking player, deal 1 damage to the engaged objective.", nil)},
 			Health: 0,
 			Quote: "",
@@ -421,11 +427,11 @@ func CreateDB() []Card {
 			Ressources: 1,
 			ForceIcons: 0,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Yavin4),
 				Interrupt("When 1 of your other objectives is engaged, your opponent engages this objective instead. [Limit once per turn.]",
 					nil)},
-			Health: 0,
+			Health: 6,
 			Quote: "The Rebels used the great temple on Yavin 4 to hide their command center, but never fully realized its mysterious history.",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 5, CardSetNumber: 1}},
 			Set: CardSet_Core,
@@ -438,7 +444,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Droid),
 				Interrupt("When an event card is played, sacrifice this unit to cancel the effects of that event card.",
 					SynergyList{TypeSynergy(CardType_Event, false)})},
@@ -455,7 +461,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 1,
 			CardCombatIcons: CombatIcons(CombatIcon{0,1}, CombatIcon{0,0}, CombatIcon{0,0}),
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Trait(Trait_Character),
 				Trait(Trait_ForceSensitive),
 				Key(K_Shielding),
@@ -478,7 +484,7 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 2,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Interrupt("When damage is dealt to a friendly non-Vehicle unit, deal 1 point of that damage to another target unit instead.",
 					SynergyList{AccumulateSynergies(SynergyList{TypeSynergy(CardType_Unit, true), InvertSynergy(TraitSynergy(Trait_Vehicule, true))})})},
 			Health: 0,
@@ -494,11 +500,164 @@ func CreateDB() []Card {
 			Ressources: 0,
 			ForceIcons: 0,
 			CardCombatIcons: nil,
-			Abilities: []AbilityInterface{
+			Abilities: AbilityList{
 				Action("Cancel this edge battle and the card effects of all other fate cards just revealed. Discard both edge stacks and start a new edge battle..", nil)},
 			Health: 0,
 			Quote: "",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 5, CardSetNumber: 6}},
 			Set: CardSet_Core,
-		Number: 157}}
+			Number: 157},
+		
+		// SET 6 ------------------------------------------------------
+		
+		Card{ Name: "Last Minute Rescue",
+			Faction: Faction_Jedi,
+			Type: Objective(false),
+			Cost: 0,
+			Ressources: 1,
+			ForceIcons: 0,
+			CardCombatIcons: nil,
+		Abilities: AbilityList{
+				Trait(Trait_CloudCity),
+				Reaction("After you refresh, remove 1 damage from a target unit.",
+					SynergyList{TypeSynergy(CardType_Unit, true)})},
+			Health: 5,
+			Quote: "The Rebel alliance is outnumbered, outgunned, and commpletely overmatched. Yet still they have hope.",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 6, CardSetNumber: 1}},
+			Set: CardSet_Core,
+			Number: 118},
+
+		Card{ Name: "Redemption",
+			Faction: Faction_Jedi,
+			Type: Type(CardType_Unit),
+			Cost: 5,
+			Ressources: 0,
+			ForceIcons: 3,
+			CardCombatIcons: CombatIcons(CombatIcon{2,0}, CombatIcon{0,0}, CombatIcon{0,2}),
+		Abilities: AbilityList{
+				Trait(Trait_Vehicule),
+				Trait(Trait_CapitalShip),
+				Interrupt("When a Character unit is destroyed, return it to its owner's hand instead of placing it in its owner's discard pile. [Limit once per turn.]",
+					SynergyList{TraitSynergy(Trait_Character, true)})},
+			Health: 4,
+			Quote: "",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 6,CardSetNumber: 2}},
+			Set: CardSet_Core,
+			Number: 115},
+
+		Card{ Name: "Corellian Engineer",
+			Faction: Faction_Neutral,
+			Type: Type(CardType_Unit),
+			Cost: 2,
+			Ressources: 0,
+			ForceIcons: 1,
+			CardCombatIcons: nil,
+		Abilities: AbilityList{
+				Trait(Trait_Character),
+				Trait(Trait_Engineer),
+				Key(K_Shielding)},
+			Health: 2,
+			Quote: "",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 6, CardSetNumber: 3}},
+			Set: CardSet_Core,
+			Number: 25},
+		
+		Card{ Name: "Return of the Jedi",
+			Faction: Faction_Jedi,
+			Type: Type(CardType_Event),
+			Cost: 3,
+			Ressources: 0,
+			ForceIcons: 3,
+			CardCombatIcons: nil,
+		Abilities: AbilityList{
+				Action("Put a Force User unit into play from your discard pile.",
+					SynergyList{TraitSynergy(Trait_ForceUser, true)})},
+			Health: 0,
+			Quote: "\"Luke, the Force runs strong in your family. Pass on what you have learned.\"\n-Yoda, Return of the Jedi",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 6, CardSetNumber: 4}},
+			Set: CardSet_Core,
+			Number: 119},
+
+		Card{ Name: "Emergency Repair",
+			Faction: Faction_Neutral,
+			Type: Type(CardType_Event),
+			Cost: 2,
+			Ressources: 0,
+			ForceIcons: 1,
+			CardCombatIcons: nil,
+		        Abilities: AbilityList{Action("Remove all damage from a targe3t objective. [Play only during your turn]", nil)},
+			Health: 0,
+			Quote: "",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 6, CardSetNumber: 5}},
+			Set: CardSet_Core,
+			Number: 50},
+
+		Card{ Name: "Force Rejuvenation",
+			Faction: Faction_Jedi,
+			Type: Type(CardType_Event),
+			Cost: 2,
+			Ressources: 0,
+			ForceIcons: 2,
+			CardCombatIcons: nil,
+	                Abilities: AbilityList{
+				Trait(Trait_Force),
+				Trait(Trait_Control),
+				Action("Discard any number of tokens and enhancements from a target friendly Character unit.",
+					SynergyList{TraitSynergy(Trait_Character, true)})},
+			Health: 0,
+			Quote: "",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 6, CardSetNumber: 6}},
+			Set: CardSet_Core,
+			Number: 61},
+
+		// SET 7 ------------------------------------------------------
+		
+		Card{ Name: "Jedi Training",
+			Faction: Faction_Jedi,
+			Type: Objective(false),
+			Cost: 0,
+			Ressources: 1,
+			ForceIcons: 0,
+			CardCombatIcons: nil,
+		Abilities: AbilityList{ConstantEffect("This objective contributes 1 Force icon to your side during the Force struggle.", nil)},
+			Health: 5,
+			Quote: "Jedi were once trained at the Jedi Temple on Coruscant. Now, the few that remain make due with what's available.",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 7, CardSetNumber: 1}},
+			Set: CardSet_Core,
+			Number: 86},
+
+		// Jedi in Hiding #84
+ 	        // Believer in the Old Ways #154
+
+		Card{ Name: "Ancient Monument",
+			Faction: Faction_Jedi,
+			Type: Enhancement(SynergyList{PlayAreaSynergy()}),
+			Cost: 1,
+			Ressources: 0,
+			ForceIcons: 3,
+			CardCombatIcons: nil,
+		        Abilities: AbilityList{
+				Trait(Trait_Location),
+				ConstantEffect("This enhancement contributes 1 Force icon to your side during the Force struggle.", nil)},
+			Health: 0,
+			Quote: "",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 7,CardSetNumber: 4}},
+			Set: CardSet_Core,
+			Number: 6},
+
+		// Jedi Mind Trick #85
+
+		Card{ Name: "It Binds All Things",
+			Faction: Faction_Neutral,
+			Type: Type(CardType_Event),
+			Cost: 1,
+			Ressources: 0,
+			ForceIcons: 1,
+			CardCombatIcons: nil,
+			Abilities: AbilityList{Action("Return the top card of your discard pile to your hand. If the Balance of the Force is with the light side, return the top 2 cards instead.", nil)},
+			Health: 0,
+			Quote: "",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 7, CardSetNumber: 6}},
+			Set: CardSet_Core,
+		Number: 80}}
 }
