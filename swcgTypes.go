@@ -182,10 +182,11 @@ const (
 	Faction_Jedi           CardFaction = iota
 	Faction_RebelAliance   CardFaction = iota
 	Faction_Smugglers      CardFaction = iota
+	Faction_LightNeutral   CardFaction = iota
 	Faction_Sith           CardFaction = iota
 	Faction_ImperialNavy   CardFaction = iota
 	Faction_ScumAndVillany CardFaction = iota
-	Faction_Neutral        CardFaction = iota
+	Faction_DarkNeutral    CardFaction = iota
 	Faction_MAX            CardFaction = iota
 )
 

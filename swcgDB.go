@@ -119,7 +119,7 @@ func CreateDB() []Card {
 			Number: 153},
 
 		Card{ Name: "Dagobah Training Grounds",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Enhancement(SynergyList{PlayAreaSynergy()}),
 			Cost: 1,
 			Ressources: 1,
@@ -306,7 +306,7 @@ func CreateDB() []Card {
 			Number: 85},
 
 		Card{ Name: "Our Most Desperate Hour",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Type(CardType_Event),
 			Cost: 0,
 			Ressources: 0,
@@ -322,7 +322,7 @@ func CreateDB() []Card {
 			Number: 96},
 		
 		Card{ Name: "Heat of Battle",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Fate(5),
 			Cost: 0,
 			Ressources: 0,
@@ -332,7 +332,9 @@ func CreateDB() []Card {
 				Action("Deal 1 damage to a target participating enemy unit.", SynergyList{TypeSynergy(CardType_Unit, false)})},
 			Health: 0,
 			Quote: "",
-			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 3, CardSetNumber: 6}},
+			ObjectiveSets: []ObjectiveSet{
+				ObjectiveSet{SetId: 3, CardSetNumber: 6},
+				ObjectiveSet{SetId: 18, CardSetNumber: 4}},
 			Set: CardSet_Core,
 			Number: 65},
 
@@ -372,7 +374,7 @@ func CreateDB() []Card {
 			Number: 113},
 
 		Card{ Name: "R2-D2",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Type(CardType_Unit),
 			Cost: 0,
 			Ressources: 1,
@@ -404,7 +406,7 @@ func CreateDB() []Card {
 			Number: 46},
 
 		Card{ Name: "Target of Opportunity",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Fate(9),
 			Cost: 0,
 			Ressources: 0,
@@ -414,7 +416,9 @@ func CreateDB() []Card {
 					Action("If you are the attacking player, deal 1 damage to the engaged objective.", nil)},
 			Health: 0,
 			Quote: "",
-			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 4, CardSetNumber: 6}},
+			ObjectiveSets: []ObjectiveSet{
+				ObjectiveSet{SetId: 4,  CardSetNumber: 6},
+				ObjectiveSet{SetId: 18, CardSetNumber: 5}},
 			Set: CardSet_Core,
 			Number: 133},
 
@@ -438,7 +442,7 @@ func CreateDB() []Card {
 			Number: 144},
 
 		Card{ Name: "C-3PO",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Type(CardType_Unit),
 			Cost: 1,
 			Ressources: 0,
@@ -494,7 +498,7 @@ func CreateDB() []Card {
 			Number: 89},
 
 		Card{ Name: "Twist of Fate",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Fate(1),
 			Cost: 0,
 			Ressources: 0,
@@ -504,7 +508,9 @@ func CreateDB() []Card {
 				Action("Cancel this edge battle and the card effects of all other fate cards just revealed. Discard both edge stacks and start a new edge battle..", nil)},
 			Health: 0,
 			Quote: "",
-			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 5, CardSetNumber: 6}},
+			ObjectiveSets: []ObjectiveSet{
+				ObjectiveSet{SetId: 5,  CardSetNumber: 6},
+				ObjectiveSet{SetId: 18, CardSetNumber: 6}},
 			Set: CardSet_Core,
 			Number: 157},
 		
@@ -546,7 +552,7 @@ func CreateDB() []Card {
 			Number: 115},
 
 		Card{ Name: "Corellian Engineer",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Type(CardType_Unit),
 			Cost: 2,
 			Ressources: 0,
@@ -579,7 +585,7 @@ func CreateDB() []Card {
 			Number: 119},
 
 		Card{ Name: "Emergency Repair",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Type(CardType_Event),
 			Cost: 2,
 			Ressources: 0,
@@ -648,7 +654,7 @@ func CreateDB() []Card {
 		// Jedi Mind Trick #85
 
 		Card{ Name: "It Binds All Things",
-			Faction: Faction_Neutral,
+			Faction: Faction_LightNeutral,
 			Type: Type(CardType_Event),
 			Cost: 1,
 			Ressources: 0,
@@ -659,5 +665,48 @@ func CreateDB() []Card {
 			Quote: "",
 			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 7, CardSetNumber: 6}},
 			Set: CardSet_Core,
-		Number: 80}}
+			Number: 80},
+
+		// SET 18 ------------------------------------------------------
+		
+		Card{ Name: "Hit And Run",
+			Faction: Faction_LightNeutral,
+			Type: Objective(true),
+			Cost: 0,
+			Ressources: 1,
+			ForceIcons: 0,
+			CardCombatIcons: nil,
+			Abilities: AbilityList{
+				Reaction("After you win an edge battle as the attacker, deal 1 damage to the engaged objective. [Limit once per turn].", nil)},
+			Health: 4,
+			Quote: "",
+			ObjectiveSets: []ObjectiveSet{ObjectiveSet{SetId: 18, CardSetNumber: 1}},
+			Set: CardSet_Core,
+			Number: 68},
+
+		Card{ Name: "Secret Informant",
+			Faction: Faction_LightNeutral,
+			Type: Type(CardType_Unit),
+			Cost: 3,
+			Ressources: 0,
+			ForceIcons: 1,
+			CardCombatIcons: CombatIcons(CombatIcon{1,0}, CombatIcon{0,0}, CombatIcon{1,0}),
+		        Abilities: AbilityList{
+				Trait(Trait_Character),
+				ConstantEffect("While this unit is participating in an engagement, you may resolve the effects of each fate card in your edge stack an additional time.",
+					SynergyList{TypeSynergy(CardType_Fate, true)})},
+			Health: 1,
+			Quote: "",
+			ObjectiveSets: []ObjectiveSet{
+				ObjectiveSet{SetId: 18,CardSetNumber: 2},
+				ObjectiveSet{SetId: 18,CardSetNumber: 3}},
+			Set: CardSet_Core,
+			Number: 110},
+
+		// Secret Informant #110
+		// Heat of Battle #65
+		// Target of Opportunity #133
+		// Twist of Fate #157
+
+	}
 }
