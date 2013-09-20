@@ -2,20 +2,51 @@ package swcg
 
 import "fmt"
 import "strconv"
+import "sort"
 
-type CardMap        map[int]*Card
-type ObjectiveSetDB [6]*Card
-type SetMap         map[int]*ObjectiveSetDB
-type TypeMap        map[CardType][]*Card
-type KeywordMap     map[CardKeywordType][]*Card
-type TraitMap       map[CardTraitType][]*Card
+type CardMap        	map[int]*Card
+type ObjectiveSetDB 	[6]*Card
+type SetMap         	map[int]*ObjectiveSetDB
+type TypeMap        	map[CardType][]*Card
+type KeywordMap     	map[CardKeywordType][]*Card
+type TraitMap       	map[CardTraitType][]*Card
+type PlayAreaSynergyMap []*Card
+type CardCollection     struct {
+	cards []*Card
+	lessF func(i,j int) bool
+}
+func CreateCollection(cards []*Card) CardCollection {
+	return CardCollection{cards: cards, lessF: func(i,j int) bool {return false}}
+}
+func (col *CardCollection) Len() int  { return len(col.cards) }
+func (col *CardCollection) Swap(i, j int) {
+	col.cards[i], col.cards[j] = col.cards[j], col.cards[i]
+}
+func (col *CardCollection) Less(i, j int) bool {
+	return col.lessF(i, j)
+}
+func (col *CardCollection) Sort(less func(i,j int) bool) {
+	col.lessF = less
+	sort.Sort(col)
+}
+
+func (m *TraitMap) Collect() CardCollection {
+	a := make([]*Card, 0)
+	for _, v := range *m {
+		a = append(a, v...)
+	}
+	return CreateCollection(a)
+}
 
 type DataCache struct {
-	cardMap    *CardMap
-	setMap     *SetMap
-	typeMap    *TypeMap
-	keywordMap *KeywordMap
-	traitMap   *TraitMap
+	cardMap    	   *CardMap
+	setMap     	   *SetMap
+	typeMap    	   *TypeMap
+	keywordMap 	   *KeywordMap
+	traitMap   	   *TraitMap
+	typeSynergyMap     *TypeMap
+	traitSynergyMap    *TraitMap
+	playAreaSynergyMap *PlayAreaSynergyMap
 }
 
 func (cache *DataCache) DumpStats() {
@@ -26,20 +57,39 @@ func (cache *DataCache) DumpStats() {
 		// }
 	}
 
+	for i, cards := range *cache.typeMap {
+		fmt.Println("Type: "+CardTypeNames[i]+":"+strconv.Itoa(len(cards)))
+	}
+
+	col := (*cache.traitMap).Collect()
+	col.Sort(func(i,j int) bool {return col.cards[i].Number < col.cards[j].Number})
+	// TDODO
+	
 	for i, cards := range *cache.traitMap {
-		fmt.Println("Trait: "+TraitNames[i]+":"+strconv.Itoa(len(cards)))
-		// for _, c := range cards {
-		// 	fmt.Println("    "+c.Name)
-		// }
+		fmt.Println("Trait: "+tabifyName(TraitNames[i])+"cards: "+strconv.Itoa(len(cards))+"\tsynergy cards: "+strconv.Itoa(len((*cache.traitSynergyMap)[i])))
+	}
+
+	for i, cards := range *cache.keywordMap {
+		fmt.Println("Keyword: "+KeywordNames[i]+":"+strconv.Itoa(len(cards)))
 	}
 }
 
+func tabifyName(s string) string {
+	if len(s)+1 >= 10 {
+		return s+"\t"
+	}
+	return s+"\t\t"
+}
+
 func AnalyzeDB(db []Card) []Card {
-	cardMap    := make(CardMap)
-	setMap     := make(SetMap)
-	typeMap    := make(TypeMap)
-	keywordMap := make(KeywordMap)
-	traitMap   := make(TraitMap)
+	cardMap        	   := make(CardMap)
+	setMap         	   := make(SetMap)
+	typeMap        	   := make(TypeMap)
+	keywordMap     	   := make(KeywordMap)
+	traitMap       	   := make(TraitMap)
+	typeSynergyMap 	   := make(TypeMap)
+	traitSynergyMap    := make(TraitMap)
+	playAreaSynergyMap := make(PlayAreaSynergyMap, 0)
 
 	for i, c := range db {
 		// card definition uniqueness validation
@@ -47,7 +97,9 @@ func AnalyzeDB(db []Card) []Card {
 			panic("Card id "+strconv.Itoa(c.Number)+" is already present in DB, please merge them...")
 			
 		}
-		cardMap[c.Number] = &db[i]
+		cardPointer := &db[i]
+		
+		cardMap[c.Number] = cardPointer
 
 		// set sanity validation
 		for _, objSet := range c.ObjectiveSets {
@@ -64,21 +116,40 @@ func AnalyzeDB(db []Card) []Card {
 				panic("Cannot add card "+strconv.Itoa(c.Number)+" to set #"+strconv.Itoa(objSet.SetId)+" as card "+strconv.Itoa(objSet.CardSetNumber)+" / 6")
 			}
 			//fmt.Println("Adding "+c.Name+"in set "+strconv.Itoa(objSet.SetId))
-			setMap[objSet.SetId][realIndex] = &db[i]
+			setMap[objSet.SetId][realIndex] = cardPointer
 		}
 
 		typeMap[c.Type.GetType()] = append(typeMap[c.Type.GetType()], &c)
 
 		for _, ability := range c.Abilities {
 			switch a := ability.(type) {
-			case KeywordInterface: keywordMap[a.GetKeyword()] = append(keywordMap[a.GetKeyword()], &db[i])
-			case *CardTrait:       traitMap[a.Trait]          = append(traitMap[a.Trait], &db[i])
+			case KeywordInterface: keywordMap[a.GetKeyword()] = append(keywordMap[a.GetKeyword()], cardPointer)
+			case *CardTrait:       traitMap[a.Trait]          = append(traitMap[a.Trait], cardPointer)
 			//case CardAbility: // todo map synergies
+			}
+		}
+
+
+		for _, synergy := range c.GatherSynergies() {
+			for i := 0 ; i < int(CardType_MAX) ; i++ {
+				if synergy.IsSynergizingWithType(CardType(i)) {
+					typeSynergyMap[CardType(i)] = append(typeSynergyMap[CardType(i)], cardPointer)
+				}
+			}
+
+			for i := 0 ; i < int(Trait_MAX) ; i++ {
+				if synergy.IsSynergizingWithTrait(CardTraitType(i)) {
+					traitSynergyMap[CardTraitType(i)] = append(traitSynergyMap[CardTraitType(i)], cardPointer)
+				}
+			}
+
+			if synergy.IsSynergizingWithPlayArea() {
+				playAreaSynergyMap = append(playAreaSynergyMap, cardPointer)
 			}
 		}
 	}
 
-	cache := &DataCache{&cardMap, &setMap, &typeMap, &keywordMap, &traitMap}
+	cache := &DataCache{&cardMap, &setMap, &typeMap, &keywordMap, &traitMap, &typeSynergyMap, &traitSynergyMap, &playAreaSynergyMap}
 	cache.DumpStats()
 	
 	return db

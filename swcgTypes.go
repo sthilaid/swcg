@@ -9,6 +9,13 @@ type BaseSynergy struct {
 func (s BaseSynergy) IsPositiveEffect() bool {
 	return s.IsPositiveEff
 }
+func (s BaseSynergy)IsSynergizingWithPlayArea()           bool { return false }
+func (s BaseSynergy)IsSynergizingWith(*Card)          bool { return false }
+func (s BaseSynergy)IsSynergizingWithType(CardType)       bool { return false }
+func (s BaseSynergy)IsSynergizingWithTrait(CardTraitType) bool { return false}
+
+
+// Type Synergy
 
 type CardTypeSynergy struct {
 	BaseSynergy
@@ -20,6 +27,11 @@ func TypeSynergy(t CardType, isPositive bool) *CardTypeSynergy {
 func (syn *CardTypeSynergy) IsSynergizingWith(card *Card) bool {
 	return syn.Type == card.Type.GetType()
 }
+func (syn *CardTypeSynergy)IsSynergizingWithType(t CardType) bool {
+	return syn.Type == t
+}
+
+// Trait Synergy
 
 type CardTraitSynergy struct {
 	BaseSynergy
@@ -37,8 +49,15 @@ func (syn *CardTraitSynergy) IsSynergizingWith(card *Card) bool {
 	}
 	return false
 }
+func (syn *CardTraitSynergy)IsSynergizingWithTrait(t CardTraitType) bool {
+	return syn.Trait == t
+}
 
-type PlayAreaSynergyType struct {}
+// Play Area Synergy
+
+type PlayAreaSynergyType struct {
+	BaseSynergy // not for the field, but for the methods
+}
 func PlayAreaSynergy() *PlayAreaSynergyType { return &PlayAreaSynergyType{} }
 func (syn *PlayAreaSynergyType) IsSynergizingWith(*Card) bool {
 	return false
@@ -46,7 +65,13 @@ func (syn *PlayAreaSynergyType) IsSynergizingWith(*Card) bool {
 func (syn *PlayAreaSynergyType) IsPositiveEffect() bool {
 	return true
 }
+func (syn *PlayAreaSynergyType)IsSynergizingWithPlayArea() bool {
+	return true
+}
 
+// Meta Synergies
+
+// Inversion 
 type InvertedSynergyType struct {
 	synergy SynergyInterface
 }
@@ -56,10 +81,20 @@ func InvertSynergy(s SynergyInterface) *InvertedSynergyType {
 func (syn *InvertedSynergyType) IsSynergizingWith(c *Card) bool {
 	return !syn.synergy.IsSynergizingWith(c)
 }
+func (syn *InvertedSynergyType) IsSynergizingWithType(t CardType) bool {
+	return !syn.synergy.IsSynergizingWithType(t)
+}
+func (syn *InvertedSynergyType) IsSynergizingWithTrait(t CardTraitType) bool {
+	return !syn.synergy.IsSynergizingWithTrait(t)
+}
+func (syn *InvertedSynergyType)IsSynergizingWithPlayArea() bool {
+	return false
+}
 func (syn *InvertedSynergyType) IsPositiveEffect() bool {
 	return syn.synergy.IsPositiveEffect()
 }
 
+// Accumulation
 type AccumulationSynergyType struct {
 	synergies SynergyList
 }
@@ -74,6 +109,28 @@ func (syn *AccumulationSynergyType) IsSynergizingWith(c *Card) bool {
 	}
 	return true
 }
+
+func (syn *AccumulationSynergyType) IsSynergizingWithType(t CardType) bool {
+	for _, s := range syn.synergies {
+		if s.IsSynergizingWithType(t) {
+			return true
+		}
+	}
+	return false
+}
+func (syn *AccumulationSynergyType) IsSynergizingWithTrait(t CardTraitType) bool {
+	for _, s := range syn.synergies {
+		if s.IsSynergizingWithTrait(t) {
+			return true
+		}
+	}
+	return false
+}
+
+func (syn *AccumulationSynergyType)IsSynergizingWithPlayArea() bool {
+	return false
+}
+
 func (syn *AccumulationSynergyType) IsPositiveEffect() bool {
 	var isPositive bool
 	for i, s := range syn.synergies {
@@ -86,11 +143,12 @@ func (syn *AccumulationSynergyType) IsPositiveEffect() bool {
 	return isPositive
 }
 
+// Options
 type OptionalSynergyType struct {
-	synergies SynergyList
+	AccumulationSynergyType
 }
 func SynergyOptions(ss SynergyList) *OptionalSynergyType {
-	return &OptionalSynergyType{synergies: ss}
+	return &OptionalSynergyType{AccumulationSynergyType: *AccumulateSynergies(ss)}
 }
 func (syn *OptionalSynergyType) IsSynergizingWith(c *Card) bool {
 	for _, s := range syn.synergies {
@@ -100,23 +158,15 @@ func (syn *OptionalSynergyType) IsSynergizingWith(c *Card) bool {
 	}
 	return false
 }
-func (syn *OptionalSynergyType) IsPositiveEffect() bool {
-	var isPositive bool
-	for i, s := range syn.synergies {
-		if i == 0 {
-			isPositive = s.IsPositiveEffect()
-		} else if isPositive != s.IsPositiveEffect() {
-			panic("found inconsistent positive effect declaration in optinal synergy...")
-		}
-	}
-	return isPositive
-}
 
-
+// Synergy Interface
 
 type SynergyInterface interface {
-	IsSynergizingWith(card *Card) bool
 	IsPositiveEffect() bool
+	IsSynergizingWithPlayArea() bool
+	IsSynergizingWith(*Card) bool
+	IsSynergizingWithType(CardType) bool
+	IsSynergizingWithTrait(CardTraitType) bool
 }
 type SynergyList []SynergyInterface
 
@@ -133,11 +183,11 @@ const (
 	CardType_MAX         CardType = iota
 )
 var CardTypeNames [CardType_MAX]string = [CardType_MAX]string {
-	"CardType_Unit",
-	"CardType_Event",
-	"CardType_Objective",
-	"CardType_Fate",
-	"CardType_Enhancement",
+	"Unit",
+	"Event",
+	"Objective",
+	"Fate",
+	"Enhancement",
 }
 
 type SimpleCardType struct {
@@ -197,14 +247,14 @@ const (
 	Faction_MAX            CardFaction = iota
 )
 var FactionNames [Faction_MAX]string = [Faction_MAX]string {
-	"Faction_Jedi",
-	"Faction_RebelAliance",
-	"Faction_Smugglers",
-	"Faction_LightNeutral",
-	"Faction_Sith",
-	"Faction_ImperialNavy",
-	"Faction_ScumAndVillany",
-	"Faction_DarkNeutral",
+	"Jedi",
+	"RebelAliance",
+	"Smugglers",
+	"LightNeutral",
+	"Sith",
+	"ImperialNavy",
+	"ScumAndVillany",
+	"DarkNeutral",
 }
 
 // Combat Icons  --------------------------------------------------------------
@@ -283,13 +333,13 @@ const (
 	K_MAX              CardKeywordType = iota
 )
 var KeywordNames [K_MAX]string = [K_MAX]string {
-	"K_Edge",
-	"K_Elite",
-	"K_Limited",
-	"K_NoEnhancement",
-	"K_Protect",
-	"K_Shielding",
-	"K_TargetedStrike",
+	"Edge",
+	"Elite",
+	"Limited",
+	"NoEnhancement",
+	"Protect",
+	"Shielding",
+	"TargetedStrike",
 }
 
 type SimpleKeyword struct {
@@ -309,7 +359,7 @@ func KeyEdge(n int) *ComplexKeyword { return &ComplexKeyword{SimpleKeyword: *Key
 
 type ProtectKeywordType struct {
 	SimpleKeyword
-	ProtectedTrait CardTraitType  // !TODO! count in synergy value
+	ProtectedTrait CardTraitType
 }
 func KeyProtect(protectedTrait CardTraitType) *ProtectKeywordType {
 	return &ProtectKeywordType{SimpleKeyword: *Key(K_Protect), ProtectedTrait: protectedTrait}
@@ -348,26 +398,26 @@ const (
 )
 
 var TraitNames [Trait_MAX]string = [Trait_MAX]string {
-	"Trait_Character",
-	"Trait_Vehicule",
-	"Trait_Force",
-	"Trait_ForceUser",
-	"Trait_ForceSensitive",
-	"Trait_Weapon",
-	"Trait_Skill",
-	"Trait_Dagobah",
-	"Trait_Location",
-	"Trait_LightSaberForm",
-	"Trait_Control",
-	"Trait_Sense",
-	"Trait_Alter",
-	"Trait_Creature",
-	"Trait_Fighter",
-	"Trait_Droid",
-	"Trait_Yavin4",
-	"Trait_CloudCity",
-	"Trait_CapitalShip",
-	"Trait_Engineer",
+	"Character",
+	"Vehicule",
+	"Force",
+	"ForceUser",
+	"ForceSensitive",
+	"Weapon",
+	"Skill",
+	"Dagobah",
+	"Location",
+	"LightSaberForm",
+	"Control",
+	"Sense",
+	"Alter",
+	"Creature",
+	"Fighter",
+	"Droid",
+	"Yavin4",
+	"CloudCity",
+	"CapitalShip",
+	"Engineer",
 }
 	
 type CardTrait struct {
@@ -407,4 +457,22 @@ type Card struct {
 	ObjectiveSets   []ObjectiveSet
 	Set             CardSetType
 	Number          int
+}
+
+func (c *Card) GatherSynergies() SynergyList {
+	list := make(SynergyList, 0)
+
+	if enhancementType, ok := c.Type.(*EnhancementCardType) ; ok {
+		list = append(list, enhancementType.Synergies...)
+	}
+
+	for _, ability := range c.Abilities {
+		switch castedAbility := ability.(type) {
+		case *ProtectKeywordType:
+			list = append(list, TraitSynergy(castedAbility.ProtectedTrait, true))
+		case *CardAbility:
+			list = append(list, castedAbility.Synergies...)
+		}
+	}
+	return list
 }
