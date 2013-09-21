@@ -32,7 +32,8 @@ type Header struct {
 type DataCollection     struct {
 	header        	[]Header
 	rows          	[]DataRow
-	sortDataIndices []int
+	prevSortIndex   int
+	sortIndex       int
 	lessF           func(i,j int) bool
 }
 func CreateDataCollection(h ...string) *DataCollection{
@@ -49,24 +50,21 @@ func (d *DataCollection) Swap(i, j int) {
 	d.rows[i], d.rows[j] = d.rows[j], d.rows[i]
 }
 func (d *DataCollection) Less(i, j int) bool {
-	prevIndex := -1
-	for _, index := range d.sortDataIndices {
-		if prevIndex < 0 || d.rows[i][prevIndex].IntValue() == d.rows[j][prevIndex].IntValue() {
-			if d.lessF(d.rows[i][index].IntValue(), d.rows[j][index].IntValue()) {
-				return true
-			}
-		}
-		prevIndex = index
+	if d.prevSortIndex < 0 || d.rows[i][d.prevSortIndex].IntValue() == d.rows[j][d.prevSortIndex].IntValue() {
+		return d.lessF(d.rows[i][d.sortIndex].IntValue(), d.rows[j][d.sortIndex].IntValue())
 	}
 	return false
 }
 func (d *DataCollection) Sort(less func(i,j int) bool, dataIndices ...int) {
 	if len(dataIndices) < 1 { panic("Need at least one data index to sort the data collection...") }
-	d.sortDataIndices = dataIndices
 
-	//for _, index := 
-	d.lessF = less
-	sort.Sort(d)
+	d.prevSortIndex = -1
+	for _, index := range dataIndices {
+		d.sortIndex = index
+		d.lessF = less
+		sort.Sort(d)
+		d.prevSortIndex = index
+	}
 }
 func (d *DataCollection) AddRow(rawrow ...interface{}) {
 	if len(rawrow) != len(d.header) {
@@ -139,7 +137,7 @@ func (cache *DataCache) DumpStats() {
 	for i, cards := range *cache.traitMap {
 		traitCollection.AddRow(TraitNames[i], len(cards), len((*cache.traitSynergyMap)[i]))
 	}
-	traitCollection.Sort(func(i,j int) bool{return i > j}, 1, 2)
+	traitCollection.Sort(func(i,j int) bool{return i > j}, 1, 2, 0)
 	fmt.Print(traitCollection.Print())
 
 	for i, cards := range *cache.keywordMap {
