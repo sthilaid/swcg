@@ -11,32 +11,106 @@ type TypeMap        	map[CardType][]*Card
 type KeywordMap     	map[CardKeywordType][]*Card
 type TraitMap       	map[CardTraitType][]*Card
 type PlayAreaSynergyMap []*Card
-type CardCollection     struct {
-	cards []*Card
-	lessF func(i,j int) bool
+
+type Data interface{
+	Print() string
+	IntValue() int
 }
-func CreateCollection(cards []*Card) CardCollection {
-	return CardCollection{cards: cards, lessF: func(i,j int) bool {return false}}
+type IntData struct {V int}
+func (d IntData) Print() string {return strconv.Itoa(d.V)}
+func (d IntData) IntValue() int {return d.V}
+
+type StrData struct {V string}
+func (d StrData) Print() string {return d.V}
+func (d StrData) IntValue() int {return int([]byte(d.V)[0])}
+
+
+type DataRow []Data
+type Header struct {
+	Name string
 }
-func (col *CardCollection) Len() int  { return len(col.cards) }
-func (col *CardCollection) Swap(i, j int) {
-	col.cards[i], col.cards[j] = col.cards[j], col.cards[i]
+type DataCollection     struct {
+	header        	[]Header
+	rows          	[]DataRow
+	sortDataIndices []int
+	lessF           func(i,j int) bool
 }
-func (col *CardCollection) Less(i, j int) bool {
-	return col.lessF(i, j)
+func CreateDataCollection(h ...string) *DataCollection{
+	d := new(DataCollection)
+	d.header = make([]Header, len(h))
+	for i, head := range h {
+		d.header[i] = Header{Name: head}
+	}
+	d.lessF = func(i,j int) bool {return false} // default
+	return d
 }
-func (col *CardCollection) Sort(less func(i,j int) bool) {
-	col.lessF = less
-	sort.Sort(col)
+func (d *DataCollection) Len() int  { return len(d.rows) }
+func (d *DataCollection) Swap(i, j int) {
+	d.rows[i], d.rows[j] = d.rows[j], d.rows[i]
+}
+func (d *DataCollection) Less(i, j int) bool {
+	prevIndex := -1
+	for _, index := range d.sortDataIndices {
+		if prevIndex < 0 || d.rows[i][prevIndex].IntValue() == d.rows[j][prevIndex].IntValue() {
+			if d.lessF(d.rows[i][index].IntValue(), d.rows[j][index].IntValue()) {
+				return true
+			}
+		}
+		prevIndex = index
+	}
+	return false
+}
+func (d *DataCollection) Sort(less func(i,j int) bool, dataIndices ...int) {
+	if len(dataIndices) < 1 { panic("Need at least one data index to sort the data collection...") }
+	d.sortDataIndices = dataIndices
+
+	//for _, index := 
+	d.lessF = less
+	sort.Sort(d)
+}
+func (d *DataCollection) AddRow(rawrow ...interface{}) {
+	if len(rawrow) != len(d.header) {
+		panic(fmt.Sprintf("Can't create row, different size from header (row: %v, header: %v)", rawrow, d.header))
+	}
+	row := make([]Data, len(rawrow))
+	for i, rdata := range rawrow {
+		switch typeData := rdata.(type) {
+		case int:    row[i] = IntData{V: typeData}
+		case string: row[i] = StrData{V: typeData}
+		default:
+			panic(fmt.Sprintf("Unkown Data type when building row (data: %v, row: %v)", rdata, rawrow))
+		}
+	}
+	d.rows = append(d.rows, row)
+}
+func (d *DataCollection) Print() string {
+	out := ""
+	for i, h := range d.header {
+		if i < len(d.header)-1 {
+			out += tabifyName(h.Name)
+		} else {
+			out += h.Name+"\n"
+		}
+	}
+	for _, r := range d.rows {
+		for i, data := range r {
+			if i < len(r)-1 {
+				out += tabifyName(data.Print())
+			} else {
+				out += data.Print()+"\n"
+			}
+		}
+	}
+	return out
 }
 
-func (m *TraitMap) Collect() CardCollection {
-	a := make([]*Card, 0)
-	for _, v := range *m {
-		a = append(a, v...)
-	}
-	return CreateCollection(a)
-}
+// func (m *TraitMap) Collect() CardCollection {
+// 	a := make([]*Card, 0)
+// 	for _, v := range *m {
+// 		a = append(a, v...)
+// 	}
+// 	return CreateCollection(a)
+// }
 
 type DataCache struct {
 	cardMap    	   *CardMap
@@ -61,13 +135,12 @@ func (cache *DataCache) DumpStats() {
 		fmt.Println("Type: "+CardTypeNames[i]+":"+strconv.Itoa(len(cards)))
 	}
 
-	col := (*cache.traitMap).Collect()
-	col.Sort(func(i,j int) bool {return col.cards[i].Number < col.cards[j].Number})
-	// TDODO
-	
+	traitCollection := CreateDataCollection("Trait", "Card Number", "Synergy Cards")
 	for i, cards := range *cache.traitMap {
-		fmt.Println("Trait: "+tabifyName(TraitNames[i])+"cards: "+strconv.Itoa(len(cards))+"\tsynergy cards: "+strconv.Itoa(len((*cache.traitSynergyMap)[i])))
+		traitCollection.AddRow(TraitNames[i], len(cards), len((*cache.traitSynergyMap)[i]))
 	}
+	traitCollection.Sort(func(i,j int) bool{return i > j}, 1, 2)
+	fmt.Print(traitCollection.Print())
 
 	for i, cards := range *cache.keywordMap {
 		fmt.Println("Keyword: "+KeywordNames[i]+":"+strconv.Itoa(len(cards)))
@@ -75,7 +148,7 @@ func (cache *DataCache) DumpStats() {
 }
 
 func tabifyName(s string) string {
-	if len(s)+1 >= 10 {
+	if len(s) >= 8 {
 		return s+"\t"
 	}
 	return s+"\t\t"
