@@ -282,6 +282,15 @@ const (
 	AbilityType_MAX             AbilityType = iota
 )
 
+var AbilityNames[AbilityType_MAX]string = [AbilityType_MAX]string {
+	"Action",
+	"Reaction",
+	"Interrupt",
+	"ConstantEffect",
+	"Keyword",
+	"Trait",
+}
+
 type BaseAbility struct {
 	Type           AbilityType
 }
@@ -440,6 +449,11 @@ const (
 	CardSet_Core CardSetType = iota
 	CardSet_MAX  CardSetType = iota
 )
+
+var SetNames [CardSet_MAX]string = [CardSet_MAX]string {
+	"Core",
+}
+
 
 // Cards   --------------------------------------------------------------------
 

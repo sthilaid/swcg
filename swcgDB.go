@@ -26,13 +26,18 @@ func (d StrData) IntValue() int {return int([]byte(d.V)[0])}
 
 
 type DataRow []Data
+type RowSortEntry struct {
+	index   int
+	lessFun func(i,j int) bool 
+}
+
 type Header struct {
 	Name string
 }
 type DataCollection     struct {
 	header        	[]Header
 	rows          	[]DataRow
-	sortIndices     []int
+	sortEntries     []RowSortEntry
 	lessF           func(i,j int) bool
 }
 func CreateDataCollection(h ...string) *DataCollection{
@@ -44,26 +49,32 @@ func CreateDataCollection(h ...string) *DataCollection{
 	d.lessF = func(i,j int) bool {return false} // default
 	return d
 }
+
+// Sorting Capabilities
+func Smaller(i,j int) bool {return i<j}
+func Greater(i,j int) bool {return i>j}
+
 func (d *DataCollection) Len() int  { return len(d.rows) }
 func (d *DataCollection) Swap(i, j int) {
 	d.rows[i], d.rows[j] = d.rows[j], d.rows[i]
 }
 func (d *DataCollection) Less(i, j int) bool {
-	for _, index := range d.sortIndices {
-		iVal, jVal := d.rows[i][index].IntValue(), d.rows[j][index].IntValue()
+	for _, entry := range d.sortEntries {
+		iVal, jVal := d.rows[i][entry.index].IntValue(), d.rows[j][entry.index].IntValue()
 		if iVal != jVal {
-			return d.lessF(iVal, jVal)
+			return entry.lessFun(iVal, jVal)
 		}
 	}
 	return false
 }
-func (d *DataCollection) Sort(less func(i,j int) bool, dataIndices ...int) {
-	if len(dataIndices) < 1 { panic("Need at least one data index to sort the data collection...") }
+func (d *DataCollection) Sort(sortEntries []RowSortEntry) {
+	if len(sortEntries) < 1 { panic("Need at least one data index to sort the data collection...") }
 
-	d.lessF = less
-	d.sortIndices = dataIndices
+	d.sortEntries = sortEntries
 	sort.Sort(d)
 }
+
+// Row Management
 func (d *DataCollection) AddRow(rawrow ...interface{}) {
 	if len(rawrow) != len(d.header) {
 		panic(fmt.Sprintf("Can't create row, different size from header (row: %v, header: %v)", rawrow, d.header))
@@ -131,37 +142,37 @@ func FilterCards(cards []*Card, predicate func(*Card) bool) []*Card {
 // }
 
 type DataCache struct {
-	cardMap    	   *CardMap
-	setMap     	   *SetMap
-	typeMap    	   *TypeMap
-	keywordMap 	   *KeywordMap
-	traitMap   	   *TraitMap
-	typeSynergyMap     *TypeMap
-	traitSynergyMap    *TraitMap
-	playAreaSynergyMap *PlayAreaSynergyMap
+	CardMap    	   *CardMap
+	SetMap     	   *SetMap
+	TypeMap    	   *TypeMap
+	KeywordMap 	   *KeywordMap
+	TraitMap   	   *TraitMap
+	TypeSynergyMap     *TypeMap
+	TraitSynergyMap    *TraitMap
+	PlayAreaSynergyMap *PlayAreaSynergyMap
 }
 
 func (cache *DataCache) DumpStats() {
-	for i, set := range *cache.setMap {
+	for i, set := range *cache.SetMap {
 		fmt.Println("Set #"+strconv.Itoa(i)+": "+set[0].Name)
 		// for _, c := range set {
 		// 	fmt.Println("    "+c.Name)
 		// }
 	}
 
-	for i, cards := range *cache.typeMap {
+	for i, cards := range *cache.TypeMap {
 		fmt.Println("Type: "+CardTypeNames[i]+":"+strconv.Itoa(len(cards)))
 	}
 
 	traitCollection := CreateDataCollection("Trait", "Card Number", "Synergy Cards")
-	for i, cards := range *cache.traitMap {
-		traitCollection.AddRow(TraitNames[i], len(cards), len((*cache.traitSynergyMap)[i]))
+	for i, cards := range *cache.TraitMap {
+		traitCollection.AddRow(TraitNames[i], len(cards), len((*cache.TraitSynergyMap)[i]))
 	}
-	traitCollection.Sort(func(i,j int) bool{return i > j}, 1, 2, 0)
+	traitCollection.Sort([]RowSortEntry{{1, Greater}, {2, Smaller}, {0, Smaller}})
 	//traitCollection.FilterRow(func(r *DataRow) bool {return (*r)[2].IntValue() > 1})
 	fmt.Print(traitCollection.Print())
 
-	for i, cards := range *cache.keywordMap {
+	for i, cards := range *cache.KeywordMap {
 		fmt.Println("Keyword: "+KeywordNames[i]+":"+strconv.Itoa(len(cards)))
 	}
 }
@@ -173,8 +184,8 @@ func tabifyName(s string) string {
 	return s+"\t\t"
 }
 
-func AnalyzeDB(db []Card) []Card {
-	cardMap        	   := make(CardMap)
+func AnalyzeDB(db []Card) ([]Card, *DataCache) {
+	CardMap        	   := make(CardMap)
 	setMap         	   := make(SetMap)
 	typeMap        	   := make(TypeMap)
 	keywordMap     	   := make(KeywordMap)
@@ -185,13 +196,13 @@ func AnalyzeDB(db []Card) []Card {
 
 	for i, c := range db {
 		// card definition uniqueness validation
-		if cardMap[c.Number] != nil {
+		if CardMap[c.Number] != nil {
 			panic("Card id "+strconv.Itoa(c.Number)+" is already present in DB, please merge them...")
 			
 		}
 		cardPointer := &db[i]
 		
-		cardMap[c.Number] = cardPointer
+		CardMap[c.Number] = cardPointer
 
 		// set sanity validation
 		for _, objSet := range c.ObjectiveSets {
@@ -241,10 +252,10 @@ func AnalyzeDB(db []Card) []Card {
 		}
 	}
 
-	cache := &DataCache{&cardMap, &setMap, &typeMap, &keywordMap, &traitMap, &typeSynergyMap, &traitSynergyMap, &playAreaSynergyMap}
-	cache.DumpStats()
+	cache := &DataCache{&CardMap, &setMap, &typeMap, &keywordMap, &traitMap, &typeSynergyMap, &traitSynergyMap, &playAreaSynergyMap}
+	//cache.DumpStats()
 	
-	return db
+	return db, cache
 }
 
 func CreateDB() []Card {
