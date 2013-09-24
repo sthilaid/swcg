@@ -32,8 +32,7 @@ type Header struct {
 type DataCollection     struct {
 	header        	[]Header
 	rows          	[]DataRow
-	prevSortIndex   int
-	sortIndex       int
+	sortIndices     []int
 	lessF           func(i,j int) bool
 }
 func CreateDataCollection(h ...string) *DataCollection{
@@ -50,21 +49,20 @@ func (d *DataCollection) Swap(i, j int) {
 	d.rows[i], d.rows[j] = d.rows[j], d.rows[i]
 }
 func (d *DataCollection) Less(i, j int) bool {
-	if d.prevSortIndex < 0 || d.rows[i][d.prevSortIndex].IntValue() == d.rows[j][d.prevSortIndex].IntValue() {
-		return d.lessF(d.rows[i][d.sortIndex].IntValue(), d.rows[j][d.sortIndex].IntValue())
+	for _, index := range d.sortIndices {
+		iVal, jVal := d.rows[i][index].IntValue(), d.rows[j][index].IntValue()
+		if iVal != jVal {
+			return d.lessF(iVal, jVal)
+		}
 	}
 	return false
 }
 func (d *DataCollection) Sort(less func(i,j int) bool, dataIndices ...int) {
 	if len(dataIndices) < 1 { panic("Need at least one data index to sort the data collection...") }
 
-	d.prevSortIndex = -1
-	for _, index := range dataIndices {
-		d.sortIndex = index
-		d.lessF = less
-		sort.Sort(d)
-		d.prevSortIndex = index
-	}
+	d.lessF = less
+	d.sortIndices = dataIndices
+	sort.Sort(d)
 }
 func (d *DataCollection) AddRow(rawrow ...interface{}) {
 	if len(rawrow) != len(d.header) {
@@ -80,6 +78,16 @@ func (d *DataCollection) AddRow(rawrow ...interface{}) {
 		}
 	}
 	d.rows = append(d.rows, row)
+}
+func (d *DataCollection) FilterRow(predicate func(*DataRow) bool) {
+	filteredRows := make([]DataRow, 0)
+	for _, r := range d.rows {
+		if predicate(&r) {
+			filteredRows = append(filteredRows, r)
+		}
+	}
+	d.rows = filteredRows
+	
 }
 func (d *DataCollection) Print() string {
 	out := ""
@@ -101,6 +109,18 @@ func (d *DataCollection) Print() string {
 	}
 	return out
 }
+
+func FilterCards(cards []*Card, predicate func(*Card) bool) []*Card {
+	filteredCards := make([]*Card, 0)
+
+	for _, c := range cards {
+		if predicate(c) {
+			filteredCards = append(filteredCards, c)
+		}
+	}
+	return filteredCards
+}
+
 
 // func (m *TraitMap) Collect() CardCollection {
 // 	a := make([]*Card, 0)
@@ -138,6 +158,7 @@ func (cache *DataCache) DumpStats() {
 		traitCollection.AddRow(TraitNames[i], len(cards), len((*cache.traitSynergyMap)[i]))
 	}
 	traitCollection.Sort(func(i,j int) bool{return i > j}, 1, 2, 0)
+	//traitCollection.FilterRow(func(r *DataRow) bool {return (*r)[2].IntValue() > 1})
 	fmt.Print(traitCollection.Print())
 
 	for i, cards := range *cache.keywordMap {
